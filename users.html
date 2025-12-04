@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Buscar Usuários do GitHub</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-top: 40px;
+        }
+
+        input {
+            padding: 8px;
+            width: 280px;
+            font-size: 15px;
+        }
+
+        button {
+            padding: 8px 16px;
+            font-size: 15px;
+            border: none;
+            background-color: #0A66C2;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            width: 320px;
+        }
+
+        li {
+            background: #f2f2f2;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+
+        #mensagem {
+            font-weight: bold;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Pesquisar Usuários do GitHub</h2>
+
+    <input id="campoBusca" type="text" placeholder="Digite o nome do usuário">
+    <button id="btnBuscar">Buscar</button>
+
+    <p id="mensagem"></p>
+
+    <ul id="listaUsuarios"></ul>
+
+    <script>
+        const btnBuscar = document.getElementById("btnBuscar");
+        const campoBusca = document.getElementById("campoBusca");
+        const lista = document.getElementById("listaUsuarios");
+        const mensagem = document.getElementById("mensagem");
+
+        btnBuscar.addEventListener("click", () => {
+            const termo = campoBusca.value.trim();
+
+            lista.innerHTML = "";
+            mensagem.textContent = "";
+
+            if (termo === "") {
+                mensagem.textContent = "Digite algo para pesquisar.";
+                return;
+            }
+
+            fetch(`https://api.github.com/search/users?q=${termo}`)
+                .then(response => response.json())
+                .then(dados => {
+                    if (dados.items.length === 0) {
+                        mensagem.textContent = "Não foram encontrados usuários para esta pesquisa.";
+                        return;
+                    }
+
+                    dados.items.forEach(user => {
+                        const li = document.createElement("li");
+
+                        li.innerHTML = `
+                            <img src="${user.avatar_url}">
+                            <div>
+                                <strong>${user.login}</strong><br>
+                                <a href="${user.html_url}" target="_blank">Ver perfil</a>
+                            </div>
+                        `;
+
+                        lista.appendChild(li);
+                    });
+                })
+                .catch(error => {
+                    mensagem.textContent = "Erro ao buscar usuários.";
+                });
+        });
+    </script>
+
+</body>
+</html>

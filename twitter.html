@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Mini Twitter</title>
+
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: #e9ecef;
+    }
+
+    #formPost {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: white;
+        padding: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        display: flex;
+        gap: 10px;
+        z-index: 10;
+    }
+
+    textarea {
+        flex: 1;
+        padding: 10px;
+        font-size: 16px;
+    }
+
+    button {
+        padding: 10px 20px;
+        background-color: #1da1f2;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    #feed {
+        margin-top: 130px;
+        padding: 20px;
+    }
+
+    .post {
+        background: white;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 6px rgba(0,0,0,0.1);
+    }
+
+    .usuario {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .usuario img {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+    }
+
+    .imagem-gato {
+        width: 100%;
+        margin-top: 10px;
+        border-radius: 10px;
+    }
+
+    .curtir {
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .curtir button {
+        background-color: #ff4757;
+        padding: 6px 12px;
+        border-radius: 6px;
+    }
+
+</style>
+</head>
+<body>
+
+<div id="formPost">
+    <textarea id="textoPost" placeholder="O que está acontecendo?" rows="3"></textarea>
+    <button id="btnPostar">Postar</button>
+</div>
+
+<div id="feed"></div>
+
+<script>
+    const feed = document.getElementById("feed");
+    const btnPostar = document.getElementById("btnPostar");
+    const textoPost = document.getElementById("textoPost");
+
+    let posts = [];
+
+    async function gerarImagemGato() {
+        const resposta = await fetch("https://api.thecatapi.com/v1/images/search");
+        const dados = await resposta.json();
+        return dados[0].url;
+    }
+
+    function renderizarFeed() {
+        feed.innerHTML = "";
+
+        posts.forEach((post, index) => {
+            const div = document.createElement("div");
+            div.className = "post";
+
+            div.innerHTML = `
+                <div class="usuario">
+                    <img src="${post.avatar}">
+                    <strong>${post.usuario}</strong>
+                </div>
+
+                <p>${post.texto}</p>
+
+                <img class="imagem-gato" src="${post.imagemGato}">
+
+                <div class="curtir">
+                    <button onclick="curtir(${index})">Curtir ❤️</button>
+                    <span>${post.likes} likes</span>
+                </div>
+            `;
+
+            feed.appendChild(div);
+        });
+    }
+
+    async function postar() {
+        const texto = textoPost.value.trim();
+        if (texto === "") return;
+
+        const imagemGato = await gerarImagemGato();
+
+        const novoPost = {
+            data: new Date(),
+            usuario: "Charles",
+            avatar: "https://i.pravatar.cc/100?img=12",
+            texto,
+            imagemGato,
+            likes: 0
+        };
+
+        posts.unshift(novoPost);
+        textoPost.value = "";
+        renderizarFeed();
+    }
+
+    function curtir(index) {
+        posts[index].likes++;
+        renderizarFeed();
+    }
+
+    btnPostar.addEventListener("click", postar);
+
+    window.curtir = curtir;
+</script>
+</body>
+</html>
